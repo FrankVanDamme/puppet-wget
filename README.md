@@ -27,6 +27,17 @@ install wget:
     include wget
 ```
 
+Pass configuration options for /etc/wgetrc:
+
+```puppet
+    class { "wget":
+        config => {
+            retries => 6,
+            }
+        }
+    }
+```
+
 ```puppet
     wget::fetch { "download Google's index":
       source      => 'http://www.google.com/index.html',

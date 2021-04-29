@@ -7,6 +7,7 @@
 class wget (
   $version = present,
   $manage_package = true,
+  $config = {},
 ) {
 
   if $manage_package {
@@ -27,5 +28,9 @@ class wget (
         }
       }
     }
+  }
+
+  class { "wget::config":
+      * => $config,
   }
 }
