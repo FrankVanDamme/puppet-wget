@@ -133,8 +133,10 @@ https_proxy = <%= @https_proxy %>
 # Force the default remote server encoding
 #remoteencoding = UTF-8
 
+<% unless ( @osfamily == 'RedHat' and scope.function_versioncmp( @os['distro']['release']['major'], '<= 6')) -%>
 # Turn on to prevent following non-HTTPS links when in recursive mode
 httpsonly = <%= @httpsonly %>
+<% end -%>
 
 # Tune HTTPS security (auto, SSLv2, SSLv3, TLSv1, PFS)
 #secureprotocol = auto
