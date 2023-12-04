@@ -10,39 +10,74 @@
 #                       before downloading
 #
 ################################################################################
+#
+# @param destination
+#
+# @param source
+#
+# @param source_hash
+#
+# @param timeout
+#
+# @param verbose
+#
+# @param redownload
+#
+# @param nocheckcertificate
+#
+# @param no_cookies
+#
+# @param execuser
+#
+# @param user
+#
+# @param password
+#
+# @param headers
+#
+# @param cache_dir
+#
+# @param cache_file
+#
+# @param flags
+#
+# @param backup
+#
+# @param mode
+#
+# @param unless
+#
 define wget::fetch (
-  $destination,
-  $source             = $title,
-  $source_hash        = undef,
-  $timeout            = '0',
-  $verbose            = false,
-  $redownload         = false,
-  $nocheckcertificate = false,
-  $no_cookies         = false,
-  $execuser           = undef,
-  $user               = undef,
-  $password           = undef,
-  $headers            = undef,
-  $cache_dir          = undef,
-  $cache_file         = undef,
-  $flags              = undef,
-  $backup             = true,
-  $group              = undef,
-  $mode               = undef,
-  $unless             = undef,
+  Optional[String] $destination = undef,
+  String $source                = $title,
+  Optional[Hash] $source_hash   = undef,
+  String $timeout               = '0',
+  Boolean $verbose              = false,
+  Boolean $redownload           = false,
+  Boolean $nocheckcertificate   = false,
+  Boolean $no_cookies           = false,
+  Optional[String] $execuser    = undef,
+  Optional[String] $user        = undef,
+  Optional[String] $password    = undef,
+  Optional[String] $headers     = undef,
+  Optional[String] $cache_dir   = undef,
+  Optional[String] $cache_file  = undef,
+  Optional[String] $flags       = undef,
+  Boolean $backup               = true,
+  Optional[String] $mode        = undef,
+  Optional[String] $unless      = undef,
 ) {
-
   include wget
 
   # The strict_variables setting aborts compilation referencing unset variables.
-  $strict = defined('$::settings::strict_variables') and $::settings::strict_variables
+  $strict = defined('$settings::strict_variables') and $settings::strict_variables
 
   if $strict and !defined('$schedule') {
     $schedule = undef
   }
 
   # Does $destination end in a slash? If so, treat as a directory
-  case $destination   {
+  case $destination {
     # This is a nasty looking regex but it's simply checking to see if the $destination
     # ends in either forward slash "\" (Linux) or backwards slash "/" (Windows)
     /^.*\/$/, /^.*\$/:  {
@@ -58,25 +93,25 @@ define wget::fetch (
   if $strict and !defined('$::http_proxy') {
     $http_proxy = undef
   } else {
-    $http_proxy = $::http_proxy
+    $http_proxy = $http_proxy
   }
   if $strict and !defined('$::https_proxy') {
     $https_proxy = undef
   } else {
-    $https_proxy = $::https_proxy
+    $https_proxy = $https_proxy
   }
 
   $http_proxy_env = $http_proxy ? {
     undef   => [],
-    default => [ "HTTP_PROXY=${http_proxy}", "http_proxy=${http_proxy}" ],
+    default => ["HTTP_PROXY=${http_proxy}", "http_proxy=${http_proxy}"],
   }
   $https_proxy_env = $https_proxy ? {
     undef   => [],
-    default => [ "HTTPS_PROXY=${https_proxy}", "https_proxy=${https_proxy}" ],
+    default => ["HTTPS_PROXY=${https_proxy}", "https_proxy=${https_proxy}"],
   }
   $password_env = $user ? {
     undef   => [],
-    default => [ "WGETRC=${_destination}.wgetrc" ],
+    default => ["WGETRC=${_destination}.wgetrc"],
   }
 
   # not using stdlib.concat to avoid extra dependency
@@ -89,14 +124,14 @@ define wget::fetch (
 
   # Windows exec unless testing requires different syntax
   if ($facts['os']['name'] == 'windows') {
-    $exec_path = $::path
+    $exec_path = $facts['path']
     $unless_test = "cmd.exe /c \"dir ${_destination}\""
   } else {
     $exec_path = '/usr/bin:/usr/sbin:/bin:/usr/local/bin:/opt/local/bin:/usr/sfw/bin'
     if $unless != undef {
       $unless_test = $unless
     }
-    elsif $redownload == true or $cache_dir != undef  {
+    elsif $redownload == true or $cache_dir != undef {
       $unless_test = 'test'
     } else {
       $unless_test = "test -s '${_destination}'"
@@ -162,7 +197,7 @@ define wget::fetch (
     default => undef,
   }
 
-  case $source_hash{
+  case $source_hash {
     '', undef: {
       $command = "wget ${verbose_option}${nocheckcert_option}${no_cookies_option}${header_option}${user_option}${output_option}${flags_joined} \"${source}\""
     }
@@ -171,12 +206,6 @@ define wget::fetch (
     }
   }
 
-
-  # ensure that wget is installed before the exec resource
-  # but only if we manage wget....
-  Class['wget']
-  -> Exec["wget-${name}"]
-
   exec { "wget-${name}":
     command     => $command,
     timeout     => $timeout,
@@ -184,6 +213,7 @@ define wget::fetch (
     environment => $environment,
     user        => $exec_user,
     path        => $exec_path,
+    require     => Package['wget'],
     schedule    => $schedule,
   }
 
@@ -196,7 +226,6 @@ define wget::fetch (
       ensure   => file,
       source   => "${cache_dir}/${cache}",
       owner    => $execuser,
-      group    => $group,
       mode     => $mode,
       require  => Exec["wget-${name}"],
       backup   => $backup,
