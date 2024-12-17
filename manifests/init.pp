@@ -4,28 +4,26 @@
 # This class will install wget - a tool used to download content from the web.
 #
 ################################################################################
+#
+# @param version
+#
+# @param manage_package
+#
 class wget (
-  $version = present,
-  $manage_package = true,
-  $config = {},
+  String $version         = present,
+  Boolean $manage_package = true,
+  Hash $config = {},
 ) {
-
   if $manage_package {
-    if !defined(Package['wget']) {
-      if $::kernel == 'Linux' {
+    if $facts['kernel'] == 'Linux' {
+      if ! defined(Package['wget']) {
         package { 'wget': ensure => $version }
       }
-      elsif $::kernel == 'FreeBSD' {
-        if versioncmp($facts['os']['release']['major'], '10') >= 0 {
-          package { 'wget': ensure => $version }
-        }
-        else {
-          package { 'wget':
-            ensure => $version,
-            name   => 'ftp/wget',
-            alias  => 'wget';
-          }
-        }
+    }
+
+    if $facts['kernel'] == 'FreeBSD' {
+      if ! defined(Package['ftp/wget']) {
+        package { 'ftp/wget': ensure => $version }
       }
     }
   }

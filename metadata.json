@@ -1,17 +1,17 @@
 {
   "name": "puppet-wget",
-  "version": "2.0.2-rc0",
-  "source": "https://github.com/voxpupuli/puppet-wget.git",
+  "version": "2.0.3",
+  "source": "https://github.com/FrankVanDamme/puppet-wget.git",
   "author": "Vox Pupuli",
   "license": "Apache-2.0",
   "summary": "Download files with wget",
   "description": "A module for wget that allows downloading of files, supporting authentication",
-  "project_page": "https://github.com/voxpupuli/puppet-wget",
+  "project_page": "https://github.com/flepoutre/puppet-wget",
   "dependencies": [],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 5.5.8 < 7.0.0"
+      "version_requirement": ">= 5.5.8 < 9.0.0"
     }
   ],
   "operatingsystem_support": [
