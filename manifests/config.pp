@@ -7,6 +7,9 @@ class wget::config (
     $https_proxy = undef,
     $timestamping = 'off',
     $httpsonly = 'off',
+    Integer $dns_timeout = 10,
+    Integer $connect_timeout = 10,
+    Integer $read_timeout = 20,
 )  {
     file { "/etc/wgetrc":
         mode    => '644',
